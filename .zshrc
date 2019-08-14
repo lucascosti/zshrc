@@ -1,5 +1,5 @@
 # Lucas source custom colors before theme/plugins load
-source ~/zshscripts/lucas-colors.zsh
+#source ~/zshscripts/lucas-colors.zsh
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 # Path to your oh-my-zsh installation.
@@ -9,7 +9,11 @@ export ZSH="/Users/lucascosti/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="lucas-theme"
+#ZSH_THEME="lucas-theme"
+
+## Source powerlevel10k & my theme
+source ~/zshscripts/powerlevel10k/powerlevel10k.zsh-theme
+[[ -f ~/zshscripts/themes/p10k-lucas.zsh ]] && source ~/zshscripts/themes/p10k-lucas.zsh
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -69,7 +73,7 @@ ZSH_THEME="lucas-theme"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git-prompt)
+plugins=(git-auto-fetch)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -81,6 +85,8 @@ source $ZSH/oh-my-zsh.sh
 setopt PROMPT_SUBST
 # allow comments in interactive shells (like Bash does)
 setopt INTERACTIVE_COMMENTS
+# set git autofetching to be once every 20 minutes
+GIT_AUTO_FETCH_INTERVAL=1200 #in seconds
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
