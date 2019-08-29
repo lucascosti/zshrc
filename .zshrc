@@ -1,5 +1,5 @@
-# Lucas source custom colors before theme/plugins load
-#source ~/zshscripts/lucas-colors.zsh
+# Lucas' .zshrc file. 
+
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 # Path to your oh-my-zsh installation.
@@ -9,6 +9,7 @@ export ZSH="/Users/lucascosti/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
+## Lucas: not needed because powerlevel10k (see below) handles the theming.
 #ZSH_THEME="lucas-theme"
 
 ## Source powerlevel10k & my theme
@@ -87,21 +88,14 @@ setopt PROMPT_SUBST
 setopt INTERACTIVE_COMMENTS
 # set git autofetching to be once every 20 minutes
 GIT_AUTO_FETCH_INTERVAL=1200 #in seconds
+# Bind Home/End keys for beginning/end of line.
+bindkey "^[[1~" beginning-of-line
+bindkey "^[[4~" end-of-line
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
-
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
@@ -139,14 +133,18 @@ alias gsl='git stash list'
 alias ga='git add'
 alias gaa='git add -A'
 alias gcom='git commit'
-alias gcommam='git add -A && git commit -m'
-alias gcomma='git add -A && git commit'
+alias gcomm='git commit -m'
+alias gcomam='git add -A && git commit -m'
+alias gcoma='git add -A && git commit'
 alias gcommend='git add -A && git commit --amend --no-edit'
 alias gm='git merge'
 alias gcp='git cherry-pick'
 alias gpoh='git push origin HEAD'
 alias grom='git rebase origin/master'
 alias gcd='cd ~/repos/'
+### Function to take git interactive rebase argument. e.g.: gir 2
+gri() { git rebase -i HEAD~$1; }
+gir() { git rebase -i HEAD~$1; }
 ### From https://docs.gitlab.com/ee/user/project/merge_requests/#checkout-merge-requests-locally : e.g. gcmr upstream 12345
 gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; }
 ### This function prunes references to deleted remote branches and
@@ -213,9 +211,6 @@ OLDgsync (){
   && echo "=====" \
   && echo "Syncing finished."
 }
-### Function to take git interactive rebase argument. e.g.: gir 2
-gri() { git rebase -i HEAD~$1; }
-gir() { git rebase -i HEAD~$1; }
 ### Function to undo all changes (including stages) back to the last commit, with a confirmation.
 gundoall () {
   local response=""

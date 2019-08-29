@@ -312,7 +312,7 @@ fi
   typeset -g POWERLEVEL9K_VCS_MODIFIED_ICON=''
   typeset -g POWERLEVEL9K_VCS_STASH_ICON=''
   typeset -g POWERLEVEL9K_VCS_CONFLICT_ICON=''
-  typeset -g POWERLEVEL9K_VCS_STAGED_ICON='ﱣ'
+  typeset -g POWERLEVEL9K_VCS_STAGED_ICON=''
 
   # Git status: feature:master#tag ⇣42⇡42 *42 merge ~42 +42 !42 ?42.
   #
