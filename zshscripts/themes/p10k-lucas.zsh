@@ -228,7 +228,7 @@ fi
   typeset -g POWERLEVEL9K_DIR_VISUAL_IDENTIFIER_EXPANSION='${P9K_VISUAL_IDENTIFIER}'
   # If directory is too long, shorten some of its segments to the shortest possible unique
   # prefix. The shortened directory can be tab-completed to the original.
-  typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_middle
+  typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_absolute_chars
   # Replace removed segment suffixes with this symbol.
   typeset -g POWERLEVEL9K_SHORTEN_DELIMITER=…
   # Color of the shortened directory segments.
@@ -241,11 +241,11 @@ fi
   # Don't shorten directories that contain files matching this pattern. They are anchors.
   typeset -g POWERLEVEL9K_SHORTEN_FOLDER_MARKER='(.shorten_folder_marker|.bzr|CVS|.git|.hg|.svn|.terraform|.citc)'
   # Don't shorten this many last directory segments. They are anchors.
-  typeset -g POWERLEVEL9K_SHORTEN_DIR_LENGTH=3
+  typeset -g POWERLEVEL9K_SHORTEN_DIR_LENGTH=45
   # Shorten directory if it's longer than this even if there is space for it. The value can
   # be either absolute (e.g., '80') or a percentage of terminal width (e.g, '50%'). If empty,
   # directory will be shortened only when prompt doesn't fit.
-  typeset -g POWERLEVEL9K_DIR_MAX_LENGTH=50
+  #typeset -g POWERLEVEL9K_DIR_MAX_LENGTH=
   # If set to true, embed a hyperlink into the directory. Useful for quickly
   # opening a directory in the file manager simply by clicking the link.
   # Can also be handy when the directory is shortened, as it allows you to see
