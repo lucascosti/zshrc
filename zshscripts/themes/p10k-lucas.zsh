@@ -30,7 +30,7 @@ fi
   # The list of segments shown on the left. Fill it with the most important segments.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
       # =========================[ Line #1 ]=========================
-      status                 # return status of last command
+      status                  # return status of last command
       time                    # current time
       dir                     # current directory
       vcs                     # git status
@@ -225,7 +225,7 @@ fi
   typeset -g POWERLEVEL9K_DIR_FOREGROUND=252 # almost white
   typeset -g POWERLEVEL9K_DIR_BACKGROUND=004
   # Lucas enable icons for the directory segment
-  typeset -g POWERLEVEL9K_DIR_VISUAL_IDENTIFIER_EXPANSION='${P9K_VISUAL_IDENTIFIER}'
+  typeset -g POWERLEVEL9K_DIR_VISUAL_IDENTIFIER_EXPANSION='${P9K_VISUAL_IDENTIFIER// }'
   # If directory is too long, shorten some of its segments to the shortest possible unique
   # prefix. The shortened directory can be tab-completed to the original.
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_absolute_chars
