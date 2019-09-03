@@ -299,7 +299,7 @@ fi
 
   #####################################[ vcs: git status ]######################################
   # Branch icon. Set this parameter to '\uF126 ' for the popular Powerline branch icon.
-  typeset -g POWERLEVEL9K_VCS_BRANCH_ICON='\uF126 '
+  typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=' '
   
   # Lucas set colors:
   typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=254 # almost white
@@ -322,14 +322,16 @@ fi
   # https://github.com/romkatv/gitstatus/blob/master/gitstatus.plugin.zsh.
   local vcs=''
   # 'feature' or '@72f5c8a' if not on a branch.
-  vcs+='${${VCS_STATUS_LOCAL_BRANCH:+'${(g::)POWERLEVEL9K_VCS_BRANCH_ICON}'${VCS_STATUS_LOCAL_BRANCH//\%/%%} }'
-  vcs+=':-%f@${VCS_STATUS_COMMIT[1,8]}}'
-  # ':master' if the tracking branch name differs from local branch.
-  vcs+='${${VCS_STATUS_REMOTE_BRANCH:#$VCS_STATUS_LOCAL_BRANCH}:+%f:${VCS_STATUS_REMOTE_BRANCH//\%/%%} }'
+  vcs+='${${VCS_STATUS_LOCAL_BRANCH:+${POWERLEVEL9K_VCS_BRANCH_ICON}${VCS_STATUS_LOCAL_BRANCH//\%/%%}}'
+  vcs+=':-@${VCS_STATUS_COMMIT[1,8]}}'
+  # ':remotebranchname' if the tracking branch name differs from local branch and is not tracking master
+  vcs+='${${VCS_STATUS_REMOTE_BRANCH:#($VCS_STATUS_LOCAL_BRANCH|master)}:+:${VCS_STATUS_REMOTE_BRANCH//\%/%%}}'
   # '#tag' if on a tag.
   vcs+='${VCS_STATUS_TAG:+%f#${VCS_STATUS_TAG//\%/%%}}'
-  # ⇣42 if behind the remote.
-  vcs+='${${VCS_STATUS_COMMITS_BEHIND:#0}:+⇣${VCS_STATUS_COMMITS_BEHIND}}'
+  # add a space after the branch shenanigans
+  vcs+=' '
+  # ⇣42 if behind the remote. If no commits are ahead, also add trailing space
+  vcs+='${${VCS_STATUS_COMMITS_BEHIND:#0}:+⇣${VCS_STATUS_COMMITS_BEHIND}${${VCS_STATUS_COMMITS_AHEAD:#<1->}:+ }}'
   # ⇡42 if ahead of the remote; no leading space if also behind the remote: ⇣42⇡42.
   # If you want '⇣42 ⇡42' instead, replace '${${(M)VCS_STATUS_COMMITS_BEHIND:#0}:+ }' with ' '.
   vcs+='${${VCS_STATUS_COMMITS_AHEAD:#0}:+${${(M)VCS_STATUS_COMMITS_BEHIND:#0}:+}⇡${VCS_STATUS_COMMITS_AHEAD} }'
@@ -344,7 +346,7 @@ fi
   #  if have unstaged changes.
   vcs+='${${VCS_STATUS_NUM_UNSTAGED:#0}:+%124F${POWERLEVEL9K_VCS_MODIFIED_ICON}${VCS_STATUS_NUM_UNSTAGED}}'
   #  if have untracked files.
-  vcs+='${${VCS_STATUS_NUM_UNTRACKED:#0}:+%008F'${(g::)POWERLEVEL9K_VCS_UNTRACKED_ICON}'${VCS_STATUS_NUM_UNTRACKED}}'
+  vcs+='${${VCS_STATUS_NUM_UNTRACKED:#0}:+%008F${POWERLEVEL9K_VCS_UNTRACKED_ICON}${VCS_STATUS_NUM_UNTRACKED}}'
   # If P9K_CONTENT is not empty, leave it unchanged. It's either "loading" or from vcs_info.
   vcs="\${P9K_CONTENT:-$vcs}"
 
