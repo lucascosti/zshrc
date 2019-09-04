@@ -141,7 +141,7 @@ alias gm='git merge'
 alias gcp='git cherry-pick'
 alias gpoh='git push origin HEAD'
 alias grom='git rebase origin/master'
-alias gcd='cd ~/repos/'
+alias cdr='cd ~/repos/'
 ### Function to take git interactive rebase argument. e.g.: gir 2
 gri() { git rebase -i HEAD~$1; }
 gir() { git rebase -i HEAD~$1; }
@@ -239,7 +239,7 @@ bbackport() {
   # if there a no arguments, build all versions. For one or more specified versions as arguments, build those specified.
   if [ -z "$1" ]
     then
-      versions=( 2.17 2.16 2.15 2.14 )
+      versions=( 2.18 2.17 2.16 2.15 )
     else
       versions=( "$@" )
   fi
