@@ -87,10 +87,22 @@ setopt PROMPT_SUBST
 # allow comments in interactive shells (like Bash does)
 setopt INTERACTIVE_COMMENTS
 # set git autofetching to be once every 20 minutes
+# https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/git-auto-fetch
 GIT_AUTO_FETCH_INTERVAL=1200 #in seconds
 # Bind Home/End keys for beginning/end of line.
 bindkey "^[[1~" beginning-of-line
 bindkey "^[[4~" end-of-line
+
+# This script enables syntax highlighting on the prompt (it must be sourced after all the other plugins/theme stuff above).
+# https://github.com/zsh-users/zsh-syntax-highlighting
+source ~/zshscripts/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+## Set the highlighters we want:
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
+## Some custom highlighter colors:
+### Declare the variable
+typeset -A ZSH_HIGHLIGHT_STYLES
+### Have paths colored blue instead of underlined
+ZSH_HIGHLIGHT_STYLES[path]='fg=33'
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -107,7 +119,8 @@ bindkey "^[[4~" end-of-line
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # Regular aliases
-alias ffs='sudo "$BASH" -c "$(history -p !!)"'
+## zsh sudo last command:
+alias ffs='sudo $(fc -ln -1)'
 alias bi='brew install'
 alias br='brew uninstall'
 alias bu='brew update'
