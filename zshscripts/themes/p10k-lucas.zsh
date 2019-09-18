@@ -17,7 +17,7 @@ fi
 
 () {
   emulate -L zsh
-  setopt no_unset
+  setopt no_unset extended_glob
   local LC_ALL=C.UTF-8
 
   # Unset all configuration options. This allows you to apply configiguration changes without
@@ -336,7 +336,7 @@ fi
   # If you want '⇣42 ⇡42' instead, replace '${${(M)VCS_STATUS_COMMITS_BEHIND:#0}:+ }' with ' '.
   vcs+='${${VCS_STATUS_COMMITS_AHEAD:#0}:+${${(M)VCS_STATUS_COMMITS_BEHIND:#0}:+}⇡${VCS_STATUS_COMMITS_AHEAD} }'
   #  if have stashes.
-  vcs+='${${VCS_STATUS_STASHES:#0}:+%025F${POWERLEVEL9K_VCS_STASH_ICON}${VCS_STATUS_STASHES}}'
+  vcs+='${${VCS_STATUS_STASHES:#0}:+%025F${POWERLEVEL9K_VCS_STASH_ICON}${VCS_STATUS_STASHES} }'
   # 'merge' if the repo is in an unusual state.
   vcs+='${VCS_STATUS_ACTION:+%001F${VCS_STATUS_ACTION//\%/%%} }'
   #  if have merge conflicts.
@@ -355,8 +355,8 @@ fi
   # Install our own Git status formatter.
   typeset -g POWERLEVEL9K_VCS_{CLEAN,UNTRACKED,MODIFIED}_CONTENT_EXPANSION=$vcs
   # When Git status is being refreshed asynchronously, display the last known repo status in grey.
-  typeset -g POWERLEVEL9K_VCS_LOADING_CONTENT_EXPANSION=${${vcs//\%f}//\%<->F}
-  typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=244
+  typeset -g POWERLEVEL9K_VCS_LOADING_CONTENT_EXPANSION=${${${vcs//\%f}//\%<->F}//\%F\{(\#|)[[:xdigit:]]#(\\|)\}}
+  typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=247
   # Enable counters for staged, unstaged, etc.
   typeset -g POWERLEVEL9K_VCS_{STAGED,UNSTAGED,UNTRACKED,CONFLICTED,COMMITS_AHEAD,COMMITS_BEHIND}_MAX_NUM=-1
 
