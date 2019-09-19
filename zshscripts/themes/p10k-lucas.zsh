@@ -301,11 +301,14 @@ fi
   # Branch icon. Set this parameter to '\uF126 ' for the popular Powerline branch icon.
   typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=' '
   
+  # Enable support for a conflict states (to customise colours)
+  typeset -g POWERLEVEL9K_VCS_CONFLICTED_STATE=true
+  
   # Lucas set colors:
   typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=254 # almost white
   typeset -g POWERLEVEL9K_VCS_CLEAN_BACKGROUND=28 #green
   typeset -g POWERLEVEL9K_VCS_{MODIFIED,UNTRACKED}_FOREGROUND=000 # black
-  typeset -g POWERLEVEL9K_VCS_{MODIFIED,UNTRACKED}_BACKGROUND=003 # yellow/orange
+  typeset -g POWERLEVEL9K_VCS_{MODIFIED,UNTRACKED,CONFLICTED}_BACKGROUND=003 # yellow/orange
 
   # Icons:
   typeset -g POWERLEVEL9K_VCS_UNTRACKED_ICON=''
@@ -353,7 +356,7 @@ fi
   # Disable the default Git status formatting.
   typeset -g POWERLEVEL9K_VCS_DISABLE_GITSTATUS_FORMATTING=true
   # Install our own Git status formatter.
-  typeset -g POWERLEVEL9K_VCS_{CLEAN,UNTRACKED,MODIFIED}_CONTENT_EXPANSION=$vcs
+  typeset -g POWERLEVEL9K_VCS_CONTENT_EXPANSION=$vcs
   # When Git status is being refreshed asynchronously, display the last known repo status in grey.
   typeset -g POWERLEVEL9K_VCS_LOADING_CONTENT_EXPANSION=${${${vcs//\%f}//\%<->F}//\%F\{(\#|)[[:xdigit:]]#(\\|)\}}
   typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=247
