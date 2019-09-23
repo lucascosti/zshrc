@@ -93,6 +93,16 @@ GIT_AUTO_FETCH_INTERVAL=1200 #in seconds
 bindkey "^[[1~" beginning-of-line
 bindkey "^[[4~" end-of-line
 
+# Set custom LSCOLORS for MacOS (see https://geoff.greer.fm/lscolors/)
+# (on other Linux systems, it is the differently-formated LS_COLORS)
+## OLD OSX default: Gxfxcxdxbxegedabagacad
+## NEW:             Exfxcxdxcxegedabagacad
+LSCOLORS='Exfxcxdxcxegedabagacad'
+## LS_COLORS equivalent: 
+LS_COLORS='di=1;34:ln=35:so=32:pi=33:ex=32:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43'
+# Set zsh's completion colors to use the above colors too (needs to use LS_COLORS):
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+
 # This script enables syntax highlighting on the prompt (it must be sourced after all the other plugins/theme stuff above).
 # https://github.com/zsh-users/zsh-syntax-highlighting
 source ~/zshscripts/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -101,7 +111,7 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 ## Some custom highlighter colors:
 ### Declare the variable
 typeset -A ZSH_HIGHLIGHT_STYLES
-### Have paths colored blue instead of underlined
+### Have paths colored blue instead of underlined (and a bit more vibrant blue than the ls one above):
 ZSH_HIGHLIGHT_STYLES[path]='fg=33'
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -155,7 +165,7 @@ alias gm='git merge'
 alias gcp='git cherry-pick'
 alias gpoh='git push origin HEAD'
 alias grom='git rebase origin/master'
-alias cdr='cd ~/repos/'
+alias {cdr,cdg,gcd}='cd ~/repos/'
 ### Function to take git interactive rebase argument. e.g.: gir 2
 gri() { git rebase -i HEAD~$1; }
 gir() { git rebase -i HEAD~$1; }
@@ -247,7 +257,7 @@ eval "$(rbenv init -)"
 eval "$(nodenv init -)"
 
 # Build GitHub dev docs
-alias bcurrent='script/server'
+alias {bcurrent,bdocs}='script/server'
 # Runs a backport then a build. 
 bbackport() {
   # if there a no arguments, build all versions. For one or more specified versions as arguments, build those specified.
