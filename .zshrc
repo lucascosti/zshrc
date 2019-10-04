@@ -14,7 +14,7 @@ export ZSH="/Users/lucascosti/.oh-my-zsh"
 
 ## Source powerlevel10k & my theme
 source ~/zshscripts/powerlevel10k/powerlevel10k.zsh-theme
-[[ -f ~/zshscripts/themes/p10k-lucas.zsh ]] && source ~/zshscripts/themes/p10k-lucas.zsh
+source ~/zshscripts/themes/p10k-lucas.zsh
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -165,12 +165,19 @@ alias gm='git merge'
 alias gcp='git cherry-pick'
 alias gpoh='git push origin HEAD'
 alias grom='git rebase origin/master'
+alias gremotes='git remote -v'
 alias {cdr,cdg,gcd}='cd ~/repos/'
 ### Function to take git interactive rebase argument. e.g.: gir 2
 gri() { git rebase -i HEAD~$1; }
 gir() { git rebase -i HEAD~$1; }
-### From https://docs.gitlab.com/ee/user/project/merge_requests/#checkout-merge-requests-locally : e.g. gcmr upstream 12345
+### Checkout remote MRs/PRs on my local machine
+#### For GitHub: e.g gcpr origin 12345
 gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; }
+compdef _git_ls_remote gcmr
+#### For GitLab: e.g. gcmr upstream 12345
+#### From https://docs.gitlab.com/ee/user/project/merge_requests/#checkout-merge-requests-locally
+gcpr() { git fetch $1 pull/$2/head:pr-$1-$2 && git checkout pr-$1-$2; }
+compdef _git_ls_remote gcpr
 ### This function prunes references to deleted remote branches and
 ### deletes local branches that have been merged and/or deleted from the remotes.
 ### It is intended to be run when on a master branch, and warns when it isn't.
