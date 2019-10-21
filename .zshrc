@@ -86,6 +86,8 @@ source $ZSH/oh-my-zsh.sh
 setopt PROMPT_SUBST
 # allow comments in interactive shells (like Bash does)
 setopt INTERACTIVE_COMMENTS
+# Live life on the edge: like bash, don't prompt for confirmation when doing rm -rf *
+setopt RM_STAR_SILENT
 # set git autofetching to be once every 20 minutes
 # https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/git-auto-fetch
 GIT_AUTO_FETCH_INTERVAL=1200 #in seconds
@@ -178,6 +180,32 @@ compdef _git_ls_remote gcmr
 #### From https://docs.gitlab.com/ee/user/project/merge_requests/#checkout-merge-requests-locally
 gcpr() { git fetch $1 pull/$2/head:pr-$1-$2 && git checkout pr-$1-$2; }
 compdef _git_ls_remote gcpr
+
+### Some icons for the functions below (prefixed so they won't annoy me in autocompletion on the shell.) Requires a Nerd Fonts patched font.
+local lcicon_infoi="$FG[033]$reset_color" # blue i
+local lcicon_trash="$FG[166]$reset_color" # orange trash
+local lcicon_scissors="$FG[003]$reset_color"
+local lcicon_tick="$FG[046]$reset_color" # green tick
+local lcicon_question="$FG[192]ﲉ$reset_color" # yellow question
+local lcicon_fail="$FG[009]$reset_color" # red x
+local lcicon_runarrow="$FG[077]$reset_color"
+local lcicon_sync="$FG[077]$reset_color"
+local lcicon_warning="$FG[226]$reset_color"
+local lcicon_undo="$FG[003]\ufa4c$reset_color"
+### This is an internal function that prints a border around command exections.
+#### If called with no arguments, it prints a simple border.
+#### Otherwise, it must be called with 3 arguments: the current step, the total number of steps, and the step title message.
+#### e.g: lcfunc_step_border 1 3 "First step in a 3 step process!"
+lcfunc_step_border() {
+  local lcicon_border="$FG[013]====$reset_color"
+  # if no arguments, return a border.
+  if [ $# -eq 0 ]
+  then
+    print -P "$lcicon_border"
+  else
+    print -P "$lcicon_border $FG[013]$1/$2:$reset_color $3 $lcicon_border"
+  fi
+}
 ### This function prunes references to deleted remote branches and
 ### deletes local branches that have been merged and/or deleted from the remotes.
 ### It is intended to be run when on a master branch, and warns when it isn't.
@@ -187,46 +215,47 @@ gclean() {
   # Warning if not on a master* branch
   if [[ $BRANCH != master* ]]
   then
-    echo -e "\e[91m!! WARNING: It looks like you are not on a master branch !!\e[39m"
-    vared -p "Are you sure you want to continue? [y/N] " -c response
+    print -P "$lcicon_warning$lcicon_warning $FG[009]WARNING: It looks like you are not on a master branch!$reset_color $lcicon_warning$lcicon_warning"
+    vared -p "$lcicon_question Are you sure you want to continue? [y/N] " -c response
     if ! [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
     then
-      echo "Aborted. Nothing was changed."
+      print -P "$lcicon_fail Aborted! Nothing was changed."
       return 1
     fi
   fi
-  echo "Simulating a clean on $BRANCH ..." \
-  && echo "===== 1/2: simulating pruning origin =====" \
+  print -P "$lcicon_infoi Simulating a clean on $BRANCH ..." \
+  && lcfunc_step_border 1 2 "$lcicon_scissors simulating pruning origin $lcicon_scissors" \
   && git remote prune origin --dry-run \
-  && echo "===== 2/2: simulating cleaning local branches merged to $BRANCH =====" \
-  && git branch --merged $BRANCH | grep -v "^\**\s*master"  \
-  && echo "=====" \
-  && echo "Simulation complete."
-  vared -p "Do you want to proceed with the above clean? [y/N] " -c response
+  && lcfunc_step_border 2 2 "$lcicon_trash simulating cleaning local branches merged to $BRANCH $lcicon_trash" \
+  && git branch --merged $BRANCH | grep -v "^\**\s*master"
+  lcfunc_step_border
+  print -P "$lcicon_infoi Simulation complete."
+  vared -p "$lcicon_question Do you want to proceed with the above clean? [y/N] " -c response
   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
   then
-    echo "Running a clean on $BRANCH ..."
-    echo "===== 1/2: pruning origin =====" \
+    print -P "$lcicon_runarrow Running a clean on $BRANCH ..." \
+    && lcfunc_step_border 1 2 "$lcicon_scissors pruning origin $lcicon_scissors" \
     && git remote prune origin \
-    && echo "===== 2/2: cleaning local branches merged to $BRANCH =====" \
+    && lcfunc_step_border 2 2 "$lcicon_trash cleaning local branches merged to $BRANCH $lcicon_trash" \
     && git branch --merged $BRANCH | grep -v "^\**\s*master" | xargs git branch -d \
-    && echo "=====" \
-    && echo "Clean finished."
+    && lcfunc_step_border \
+    && print -P "$lcicon_tick Clean finished!"
   else
-    echo "Aborted. Nothing was changed."
+    print -P "$lcicon_fail Aborted! Nothing was changed."
+    return 1
   fi
 }
 ### Sync function for my current workflow, which only has a remote origin.
 ### Fetches origin and rebases current branch from origin.
 gsync (){
   local BRANCH=`git rev-parse --abbrev-ref HEAD`
-  echo "Syncing the current branch: $BRANCH"
-  echo "===== 1/2: fetching origin =====" \
+  print -P "$lcicon_sync Syncing the current branch: $BRANCH"
+  lcfunc_step_border 1 2 "fetching origin" \
   && git fetch origin \
-  && echo "===== 2/2: rebasing $BRANCH =====" \
+  && lcfunc_step_border 2 2 "rebasing $BRANCH" \
   && git rebase origin/$BRANCH \
-  && echo "=====" \
-  && echo "Syncing finished."
+  && lcfunc_step_border \
+  && print -P "$lcicon_tick Syncing finished!"
 }
 ### Sync function for my previous workflow, which had upstream+originfork+local.
 ### Syncs local and origin branch from a remote: runs a fetch from specified remote + rebase local + push to origin.
@@ -245,16 +274,20 @@ OLDgsync (){
 ### Function to undo all changes (including stages) back to the last commit, with a confirmation.
 gundoall () {
   local response=""
-  echo "WARNING: This will delete all untracked files, and undo all changes since the last commit."
-  vared -p "Are you sure? [y/N] " -c response
+  print -P "$lcicon_warning $FG[009]WARNING:$reset_color This will delete all untracked files, and undo all changes since the previous commit."
+  vared -p "$lcicon_question Are you sure? [y/N] " -c response
   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
   then
-    echo "===== 1/2: git reset --hard HEAD =====" \
+    print -P "$lcicon_runarrow Undoing to the previous commit ..."
+    lcfunc_step_border 1 2 "$lcicon_undo git reset --hard HEAD $lcicon_undo" \
     && git reset --hard HEAD \
-    && echo "===== 2/2: git clean -fd \$(git rev-parse --show-toplevel) =====" \
-    && git clean -fd $(git rev-parse --show-toplevel)
+    && lcfunc_step_border 2 2 "$lcicon_trash git clean -fd \$(git rev-parse --show-toplevel) $lcicon_trash" \
+    && git clean -fd $(git rev-parse --show-toplevel) \
+    && lcfunc_step_border \
+    && print -P "$lcicon_tick Done!"
   else
-    echo "Aborted. Nothing was changed."
+    print -P "$lcicon_fail Aborted! Nothing was changed."
+    return 1
   fi
 }
 
