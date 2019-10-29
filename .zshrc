@@ -1,4 +1,4 @@
-# Lucas' .zshrc file. 
+# Lucas' .zshrc file.
 
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -77,6 +77,9 @@ source ~/zshscripts/themes/p10k-lucas.zsh
 plugins=(git-auto-fetch)
 
 source $ZSH/oh-my-zsh.sh
+
+# Load completions (e.g. for git completion)
+autoload -Uz compinit && compinit
 
 # User configuration
 
@@ -173,13 +176,15 @@ alias {cdr,cdg,gcd}='cd ~/repos/'
 gri() { git rebase -i HEAD~$1; }
 gir() { git rebase -i HEAD~$1; }
 ### Checkout remote MRs/PRs on my local machine
-#### For GitHub: e.g gcpr origin 12345
-gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; }
-compdef _git_ls_remote gcmr
 #### For GitLab: e.g. gcmr upstream 12345
 #### From https://docs.gitlab.com/ee/user/project/merge_requests/#checkout-merge-requests-locally
+gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; }
+# This autocompletes the above function with the list of remotes
+compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcmr
+#### For GitHub: e.g gcpr origin 12345
 gcpr() { git fetch $1 pull/$2/head:pr-$1-$2 && git checkout pr-$1-$2; }
-compdef _git_ls_remote gcpr
+# This autocompletes the above function with the list of remotes
+compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcpr
 
 ### Some icons for the functions below (prefixed so they won't annoy me in autocompletion on the shell.) Requires a Nerd Fonts patched font.
 local lcicon_infoi="$FG[033]$reset_color" # blue i
