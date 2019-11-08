@@ -301,8 +301,22 @@ gundoall () {
 eval "$(rbenv init -)"
 eval "$(nodenv init -)"
 
-# Build GitHub dev docs
-alias {bcurrent,bdocs}='script/server'
+# Build GitHub docs
+alias bcurrent='bdocs'
+bdocs() {
+  # If server-lite exists, run that
+  if [ -f "script/server-lite" ]; then
+    echo "Running script/server-lite..."
+    script/server-lite
+  # Otherwise, run the normal server
+  elif [ -f "script/server" ]; then
+    echo "Running script/server..."
+    script/server
+  else
+    print -P "$lcicon_fail Can't find a server script! Are you sure you are in a docs repo?"
+    return 1
+  fi
+}
 # Runs a backport then a build. 
 bbackport() {
   # if there a no arguments, build all versions. For one or more specified versions as arguments, build those specified.
