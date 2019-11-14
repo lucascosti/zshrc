@@ -187,8 +187,25 @@ gir() { git rebase -i HEAD~$1; }
 gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; }
 # This autocompletes the above function with the list of remotes
 compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcmr
-#### For GitHub: e.g gcpr origin 12345
-gcpr() { git fetch $1 pull/$2/head:pr-$1-$2 && git checkout pr-$1-$2; }
+#### For GitHub: e.g gcpr origin 12345.
+#### It's kinda fancy. This fetches the remote PR, but also automatically sets up tracking to the PR branch on the remote, and tells you how to push back to it. Requires curl and jq installed, plus your $github_token set as an evironment variable.
+gcpr() { 
+  lcfunc_step_border 1 2 "Getting info for the checkout"
+  # Get the name of the org/user and repo for a curl command
+  local pr_organdrepo=$(git remote show origin -n | grep h.URL | sed 's/.*://;s/.git$//')
+  print -P "$lcicon_infoi API call to: https://api.github.com/repos/$pr_organdrepo/pulls/$2"
+  # get the name of the PR's branch using the API.
+  local pr_branch=$(curl -sS --request GET --url https://api.github.com/repos/$pr_organdrepo/pulls/$2 --header "authorization: Bearer $github_token" | jq '.head.ref' -r)
+  print -P "$lcicon_infoi API call complete. PR branch is: $pr_branch"
+  lcfunc_step_border 1 2 "Fetching PR and setting up tracking"
+  # fetch and checkout the PR, track the remote branch of the PR
+  git fetch $1 pull/$2/head:pr-$1-$2 \
+  && git checkout pr-$1-$2 \
+  && git branch --set-upstream-to=$1/$pr_branch \
+  && lcfunc_step_border \
+  && print -P "$lcicon_tick Done!" \
+  && print -P "$lcicon_infoi If you have write access to the PR's branch, you can push changes using:\n  git push $1 pr-$1-$2:$pr_branch"
+}
 # This autocompletes the above function with the list of remotes
 compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcpr
 
