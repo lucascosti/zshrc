@@ -4,3 +4,6 @@
 [submodule "zshscripts/powerlevel10k"]
 	path = zshscripts/powerlevel10k
 	url = git@github.com:romkatv/powerlevel10k.git
+[submodule "zshscripts/cheatsheets"]
+	path = zshscripts/cheatsheets
+	url = git@github.com:cheat/cheatsheets.git
