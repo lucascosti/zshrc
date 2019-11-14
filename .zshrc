@@ -172,6 +172,8 @@ alias gcp='git cherry-pick'
 alias gpoh='git push origin HEAD'
 alias grom='git rebase origin/master'
 alias gremotes='git remote -v'
+alias gsub='git submodule'
+alias gsubupd='git submodule update --remote --merge'
 alias {cdr,cdg,gcd}='cd ~/repos/'
 ### Function to take git interactive rebase argument. e.g.: gir 2
 gri() { git rebase -i HEAD~$1; }
