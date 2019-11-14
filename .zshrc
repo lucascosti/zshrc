@@ -1,5 +1,11 @@
 # Lucas' .zshrc file.
+# https://github.com/lucascosti/zshrc
 
+## Source powerlevel10k & my theme
+source ~/zshscripts/powerlevel10k/powerlevel10k.zsh-theme
+source ~/zshscripts/themes/p10k-lucas.zsh
+
+######## oh-my-zsh stuff  ########
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 # Path to your oh-my-zsh installation.
@@ -9,12 +15,8 @@ export ZSH="/Users/lucascosti/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-## Lucas: not needed because powerlevel10k (see below) handles the theming.
+## Lucas: not needed because powerlevel10k (see above) handles the theming.
 #ZSH_THEME="lucas-theme"
-
-## Source powerlevel10k & my theme
-source ~/zshscripts/powerlevel10k/powerlevel10k.zsh-theme
-source ~/zshscripts/themes/p10k-lucas.zsh
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -81,9 +83,7 @@ source $ZSH/oh-my-zsh.sh
 # Load completions (e.g. for git completion)
 autoload -Uz compinit && compinit
 
-# User configuration
-
-######## Lucas' extra stuff below here ########
+######## Lucas' custom stuff below here ########
 
 # allow commands to be executed in the prompt:
 setopt PROMPT_SUBST
@@ -136,15 +136,15 @@ export CHEAT_CONFIG_PATH="~/zshscripts/miscdotfiles/cheat/conf.yml"
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Regular aliases
-## zsh sudo last command:
+# Aliases
+
+## Regular aliases
+### zsh sudo last command:
 alias ffs='sudo $(fc -ln -1)'
 alias bi='brew install'
 alias br='brew uninstall'
 alias bupd='brew update'
 alias bupg='brew upgrade'
-
-# Git
 ## Git aliases
 alias g='git'
 alias gfu='git fetch upstream'
@@ -178,6 +178,37 @@ alias gremotes='git remote -v'
 alias gsub='git submodule'
 alias gsubupd='git submodule update --remote --merge'
 alias {cdr,cdg,gcd}='cd ~/repos/'
+
+# Functions
+
+## Some icons for the functions below (prefixed so they won't annoy me in autocompletion on the shell.) Requires a Nerd Fonts patched font.
+local lcicon_infoi="$FG[033]$reset_color" # blue i
+local lcicon_trash="$FG[166]$reset_color" # orange trash
+local lcicon_scissors="$FG[003]$reset_color" #light orange scissors
+local lcicon_tick="$FG[046]$reset_color" # green tick
+local lcicon_question="$FG[192]ﲉ$reset_color" # yellow question
+local lcicon_fail="$FG[009]$reset_color" # red x
+local lcicon_runarrow="$FG[077]$reset_color" # green arrow
+local lcicon_sync="$FG[077]$reset_color" # green sync symbol
+local lcicon_warning="$FG[226]$reset_color" # yellow warning symbol
+local lcicon_undo="$FG[003]\ufa4c$reset_color" # orange undo symbol
+## This is an internal function that prints a border around command exections.
+### If called with no arguments, it prints a simple border.
+### Otherwise, it must be called with 3 arguments: the current step, the total number of steps, and the step title message.
+### e.g: lcfunc_step_border 1 3 "First step in a 3 step process!"
+lcfunc_step_border() {
+  local lcicon_border="$FG[013]====$reset_color"
+  # if no arguments, return a border.
+  if [ $# -eq 0 ]
+  then
+    print -P "$lcicon_border"
+  else
+    print -P "$lcicon_border $FG[013]$1/$2:$reset_color $3 $lcicon_border"
+  fi
+}
+
+## Git functions
+
 ### Function to take git interactive rebase argument. e.g.: gir 2
 gri() { git rebase -i HEAD~$1; }
 gir() { git rebase -i HEAD~$1; }
@@ -185,10 +216,10 @@ gir() { git rebase -i HEAD~$1; }
 #### For GitLab: e.g. gcmr upstream 12345
 #### From https://docs.gitlab.com/ee/user/project/merge_requests/#checkout-merge-requests-locally
 gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; }
-# This autocompletes the above function with the list of remotes
+#### This autocompletes the above function with the list of remotes
 compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcmr
 #### For GitHub: e.g gcpr origin 12345.
-#### It's kinda fancy. This fetches the remote PR, but also automatically sets up tracking to the PR branch on the remote, and tells you how to push back to it. Requires curl and jq installed, plus your $github_token set as an evironment variable.
+#### It's kinda fancy. This fetches the remote PR, but also automatically sets up tracking to the PR branch on the remote, and tells you how to push back to it. Requires curl and jq installed, plus your  $github_token set as an evironment variable.
 gcpr() { 
   lcfunc_step_border 1 2 "Getting info for the checkout"
   # Get the name of the org/user and repo for a curl command
@@ -206,34 +237,9 @@ gcpr() {
   && print -P "$lcicon_tick Done!" \
   && print -P "$lcicon_infoi If you have write access to the PR's branch, you can push changes using:\n  git push $1 pr-$1-$2:$pr_branch"
 }
-# This autocompletes the above function with the list of remotes
+#### This autocompletes the above function with the list of remotes
 compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcpr
 
-### Some icons for the functions below (prefixed so they won't annoy me in autocompletion on the shell.) Requires a Nerd Fonts patched font.
-local lcicon_infoi="$FG[033]$reset_color" # blue i
-local lcicon_trash="$FG[166]$reset_color" # orange trash
-local lcicon_scissors="$FG[003]$reset_color"
-local lcicon_tick="$FG[046]$reset_color" # green tick
-local lcicon_question="$FG[192]ﲉ$reset_color" # yellow question
-local lcicon_fail="$FG[009]$reset_color" # red x
-local lcicon_runarrow="$FG[077]$reset_color"
-local lcicon_sync="$FG[077]$reset_color"
-local lcicon_warning="$FG[226]$reset_color"
-local lcicon_undo="$FG[003]\ufa4c$reset_color"
-### This is an internal function that prints a border around command exections.
-#### If called with no arguments, it prints a simple border.
-#### Otherwise, it must be called with 3 arguments: the current step, the total number of steps, and the step title message.
-#### e.g: lcfunc_step_border 1 3 "First step in a 3 step process!"
-lcfunc_step_border() {
-  local lcicon_border="$FG[013]====$reset_color"
-  # if no arguments, return a border.
-  if [ $# -eq 0 ]
-  then
-    print -P "$lcicon_border"
-  else
-    print -P "$lcicon_border $FG[013]$1/$2:$reset_color $3 $lcicon_border"
-  fi
-}
 ### This function prunes references to deleted remote branches and
 ### deletes local branches that have been merged and/or deleted from the remotes.
 ### It is intended to be run when on a master branch, and warns when it isn't.
@@ -319,12 +325,13 @@ gundoall () {
   fi
 }
 
-#########
-# Required for GitHub docs builds bootstrap
+# GitHub docs build stuff
+
+## Required for GitHub docs builds bootstrap
 eval "$(rbenv init -)"
 eval "$(nodenv init -)"
 
-# Build GitHub docs
+## Build GitHub docs
 alias bcurrent='bdocs'
 bdocs() {
   # If server-lite exists, run that
@@ -340,12 +347,12 @@ bdocs() {
     return 1
   fi
 }
-# Runs a backport then a build. 
+## Runs a backport then a build. 
 bbackport() {
   # if there a no arguments, build all versions. For one or more specified versions as arguments, build those specified.
   if [ -z "$1" ]
     then
-      versions=( 2.18 2.17 2.16 2.15 )
+      versions=( 2.19 2.18 2.17 2.16 )
     else
       versions=( "$@" )
   fi
