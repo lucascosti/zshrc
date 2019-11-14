@@ -119,6 +119,9 @@ typeset -A ZSH_HIGHLIGHT_STYLES
 ### Have paths colored blue instead of underlined (and a bit more vibrant blue than the ls one above):
 ZSH_HIGHLIGHT_STYLES[path]='fg=33'
 
+# Set path for the cheat command config (https://github.com/cheat/cheat)
+export CHEAT_CONFIG_PATH="~/zshscripts/miscdotfiles/cheat/conf.yml"
+
 # export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
