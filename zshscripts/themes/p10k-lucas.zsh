@@ -127,6 +127,8 @@
   vcs+='${${VCS_STATUS_NUM_UNSTAGED:#0}:+%124F${POWERLEVEL9K_VCS_MODIFIED_ICON}${VCS_STATUS_NUM_UNSTAGED}}'
   #  if there are untracked files.
   vcs+='${${VCS_STATUS_NUM_UNTRACKED:#0}:+%008F${POWERLEVEL9K_VCS_UNTRACKED_ICON}${VCS_STATUS_NUM_UNTRACKED}}'
+  # Force a color reset in case this breaks over to another line
+  vcs+='$reset_color'
   # If P9K_CONTENT is not empty, leave it unchanged. It's either "loading" or from vcs_info.
   vcs="\${P9K_CONTENT:-$vcs}"
   

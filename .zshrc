@@ -138,7 +138,8 @@ ZSH_HIGHLIGHT_STYLES[path]='fg=33'
 alias ffs='sudo $(fc -ln -1)'
 alias bi='brew install'
 alias br='brew uninstall'
-alias bu='brew update'
+alias bupd='brew update'
+alias bupg='brew upgrade'
 
 # Git
 ## Git aliases
