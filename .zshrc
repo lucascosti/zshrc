@@ -312,7 +312,7 @@ gundoall () {
   vared -p "$lcicon_question Are you sure? [y/N] " -c response
   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
   then
-    print -P "$lcicon_runarrow Undoing to the previous commit ..."
+    print -P "$lcicon_runarrow Undoing to the previous commit..."
     lcfunc_step_border 1 2 "$lcicon_undo git reset --hard HEAD $lcicon_undo" \
     && git reset --hard HEAD \
     && lcfunc_step_border 2 2 "$lcicon_trash git clean -fd \$(git rev-parse --show-toplevel) $lcicon_trash" \
@@ -334,12 +334,7 @@ eval "$(nodenv init -)"
 ## Build GitHub docs
 alias bcurrent='bdocs'
 bdocs() {
-  # If server-lite exists, run that
-  if [ -f "script/server-lite" ]; then
-    echo "Running script/server-lite..."
-    script/server-lite
-  # Otherwise, run the normal server
-  elif [ -f "script/server" ]; then
+  if [ -f "script/server" ]; then
     echo "Running script/server..."
     script/server
   else
