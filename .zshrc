@@ -94,6 +94,8 @@ setopt RM_STAR_SILENT
 # set git autofetching to be once every 20 minutes
 # https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/git-auto-fetch
 GIT_AUTO_FETCH_INTERVAL=1200 #in seconds
+# Disable highlighting of pasted text. See https://github.com/zsh-users/zsh/blob/ac0dcc9a63dc2a0edc62f8f1381b15b0b5ce5da3/NEWS#L37-L42
+zle_highlight+=(paste:none)
 # Bind Home/End keys for beginning/end of line.
 bindkey "^[[1~" beginning-of-line
 bindkey "^[[4~" end-of-line
