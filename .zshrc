@@ -229,7 +229,12 @@ gcpr() {
   print -P "$lcicon_infoi API call to: https://api.github.com/repos/$pr_organdrepo/pulls/$2"
   # get the name of the PR's branch using the API.
   local pr_branch=$(curl -sS --request GET --url https://api.github.com/repos/$pr_organdrepo/pulls/$2 --header "authorization: Bearer $github_token" | jq '.head.ref' -r)
-  print -P "$lcicon_infoi API call complete. PR branch is: $pr_branch"
+  if [[ "$pr_branch" == "null" ]] ; then
+    print -P "$lcicon_fail API call did not find a remote branch! Are you sure you used the correct remote and PR number?"
+    return 1
+  else
+    print -P "$lcicon_infoi API call complete. PR branch is: $pr_branch"
+  fi
   lcfunc_step_border 1 2 "Fetching PR and setting up tracking"
   # fetch and checkout the PR, track the remote branch of the PR
   git fetch $1 pull/$2/head:pr-$1-$2 \
@@ -281,15 +286,56 @@ gclean() {
     return 1
   fi
 }
-### Sync function for my current workflow, which only has a remote origin.
-### Fetches origin and rebases current branch from origin.
+### Sync function for my current workflow, which only has one remote: origin.
+### It rebases the current branch, with some intelligence to figure out which remote branch to rebase to:
+### * If there is a branch on the remote with the same name as the current branch, use that for the rebase.
+### * Otherwise, look at the tracking branch for the rebase:
+###   * If there is no tracking branch, exit with an error.
+###   * If the tracking branch is master, exit with an error. I probably don't want to rebase to master unless I do it explicitly myself.
+###   * If the tracking branch is another branch that is not master, use that for the rebase.
 gsync (){
-  local BRANCH=`git rev-parse --abbrev-ref HEAD`
-  print -P "$lcicon_sync Syncing the current branch: $BRANCH"
-  lcfunc_step_border 1 2 "fetching origin" \
-  && git fetch origin \
-  && lcfunc_step_border 2 2 "rebasing $BRANCH" \
-  && git rebase origin/$BRANCH \
+  local REMOTE=origin
+  local LOCAL_BRANCH=`git rev-parse --abbrev-ref HEAD`
+  local REMOTE_BRANCH=''
+  
+  print -P "$lcicon_sync Syncing the current branch: $LOCAL_BRANCH"
+  # Step 1: Fetch from the remote
+  lcfunc_step_border 1 3 "Fetching remote $REMOTE"
+  if ! git fetch $REMOTE ; then
+    print -P "$lcicon_fail Fetch from remote '$REMOTE' failed."
+    return 1
+  fi
+  # Step 2: Figure out which branch to rebase to
+  lcfunc_step_border 2 3 "Finding which remote branch to rebase to"
+  # Test if there is branch with the same name on the remote
+  if git show-branch remotes/$REMOTE/$LOCAL_BRANCH > /dev/null 2>&1 ; then
+    # There is a branch with the same name on the remote, use that for the rebase
+    REMOTE_BRANCH=$LOCAL_BRANCH
+    print -P "$lcicon_infoi Remote branch is $REMOTE/$REMOTE_BRANCH"
+  else
+    print -P "$lcicon_infoi No branch with the same name as $LOCAL_BRANCH on the remote. Looking at the tracking branch..."
+    # Use the upstream tracking branch for the rebase, as long as it is NOT master
+    if ! REMOTE_BRANCH=`git rev-parse --abbrev-ref --symbolic-full-name @{u}` > /dev/null 2>&1 ; then
+      # There is no tracking branch
+      print -P "$lcicon_fail Sync failed! There is no tracking branch to rebase to."
+      return 1
+    else
+      # There is a tracking branch. Strip the 'remote/' from the start of it
+      REMOTE_BRANCH=`echo $REMOTE_BRANCH | sed "s/$REMOTE\///"`
+      # Test to see if the remote branch is a master branch
+      if  [[ $REMOTE_BRANCH = master* ]] ; then
+        # The remote upstream tracking branch is master, so don't sync it (syncing might rebase the current branch to the wrong branch).
+        print -P "$lcicon_fail Sync failed! The tracking branch is a master branch. If you want to rebase to master, you will have to do it yourself."
+        return 1
+      else
+        # There is a proper tracking branch with a different name and is not master
+        print -P "$lcicon_infoi Remote tracking branch is $REMOTE/$REMOTE_BRANCH"
+      fi
+    fi
+  fi
+  # Step 3:  Now we have all the info, do the rebase
+  lcfunc_step_border 3 3 "Rebasing $LOCAL_BRANCH to $REMOTE/$REMOTE_BRANCH" \
+  && git rebase $REMOTE/$REMOTE_BRANCH \
   && lcfunc_step_border \
   && print -P "$lcicon_tick Syncing finished!"
 }
