@@ -239,7 +239,7 @@ gcpr() {
 #### This autocompletes the above function with the list of remotes
 compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcpr
 
-### This function prunes references to deleted remote branches and deletes local branches that have been merged and/or deleted from the remotes.
+### This function prunes references to deleted remote branches, and deletes local branches that have been merged and/or deleted from the remotes.
 ### It is intended to be run when on a master branch, and warns when it isn't.
 gclean() {
   local BRANCH=`git rev-parse --abbrev-ref HEAD`
@@ -255,21 +255,40 @@ gclean() {
       return 1
     fi
   fi
-  print -P "$lcicon_infoi Simulating a clean on $BRANCH ..." \
-  && lcfunc_step_border 1 2 "$lcicon_scissors simulating pruning origin $lcicon_scissors" \
-  && git remote prune origin --dry-run \
-  && lcfunc_step_border 2 2 "$lcicon_trash simulating cleaning local branches merged to $BRANCH $lcicon_trash" \
+  
+  print -P "$lcicon_infoi Simulating a clean on $BRANCH ..."
+  # Step 1: Simulate a prune and save the result to a variable. Echo the variable if it is not empty.
+  lcfunc_step_border 1 3 "$lcicon_scissors Simulating pruning origin $lcicon_scissors" \
+  && remote_prune_list="$(git remote prune origin --dry-run)" \
+  && if [ ! -z "$remote_prune_list" ]; then echo $remote_prune_list; fi
+  # Step 2: check if any local branches have been merged to master. 
+  lcfunc_step_border 2 3 "$lcicon_trash Simulating cleaning local branches merged to $BRANCH $lcicon_trash" \
   && git branch --merged $BRANCH | grep -v "^\**\s*master"
+  # Step 3: Using the variable from step 1, check if any local branches have the same name as remote ones that would be pruned.
+  # !! Be careful when looking at the result of this! !!
+  # This is necessary for branches merged with the GitHub 'squash-and-merge' workflows.
+  # Save the result to a variable, and echo the variable if it is not empty.
+  lcfunc_step_border 3 3 "$lcicon_trash Simulating cleaning local branches with same name as pruned remote ones $lcicon_trash" \
+  && local_compare_to_delete="$(comm -12 <(git branch | sed 's/ *//g') <( echo $remote_prune_list | sed 's/^.*origin\///g') | xargs -L1 -J % echo %)" \
+  && if [ ! -z "$local_compare_to_delete" ]; then echo $local_compare_to_delete; fi
   lcfunc_step_border
-  print -P "$lcicon_infoi Simulation complete."
+  print -P "$lcicon_infoi Simulation complete.\n"
+  
+  # Ask for a confirmation before proceeding with the clean
   vared -p "$lcicon_question Do you want to proceed with the above clean? [y/N] " -c response
   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
   then
+    # Step 1: Run a prune and save the result (i.e. the pruned branches) to a variable.
+    # Step 2: delete any branches that have been merged into master
+    # Step 3: Using the variable from step 1, check if any local branches have the same name as remote ones that would be pruned.
+    #         If there are any branches that match, delete them.
     print -P "$lcicon_runarrow Running a clean on $BRANCH ..." \
-    && lcfunc_step_border 1 2 "$lcicon_scissors pruning origin $lcicon_scissors" \
-    && git remote prune origin \
-    && lcfunc_step_border 2 2 "$lcicon_trash cleaning local branches merged to $BRANCH $lcicon_trash" \
-    && git branch --merged $BRANCH | grep -v "^\**\s*master" | xargs git branch -d \
+    && lcfunc_step_border 1 3 "$lcicon_scissors Pruning origin $lcicon_scissors" \
+    && remote_prune_list="$(git remote prune origin)" \
+    && lcfunc_step_border 2 3 "$lcicon_trash Cleaning local branches merged to $BRANCH $lcicon_trash" \
+    && git branch --merged $BRANCH | grep -v "^\**\s*master" | xargs git branch -d || true \
+    && lcfunc_step_border 3 3 "$lcicon_trash Cleaning local branches with same name as pruned remote ones $lcicon_trash" \
+    && comm -12 <(git branch | sed "s/ *//g") <( echo $remote_prune_list | sed "s/^.*origin\///g") | xargs -L1 -J % git branch -D % \
     && lcfunc_step_border \
     && print -P "$lcicon_tick Clean finished!"
   else
@@ -294,7 +313,7 @@ gsync (){
   # Step 1: Fetch from the remote
   lcfunc_step_border 1 3 "Fetching remote $REMOTE"
   if ! git fetch $REMOTE ; then
-    print -P "$lcicon_fail Fetch from remote '$REMOTE' failed."
+    print -P "$lcicon_fail Fetch from remote $REMOTE failed."
     return 1
   fi
   # Step 2: Figure out which branch to rebase to
@@ -317,7 +336,7 @@ gsync (){
       # Test to see if the remote branch is a master branch
       if  [[ $REMOTE_BRANCH = master* ]] ; then
         # The remote upstream tracking branch is master, so don't sync it (syncing might rebase the current branch to the wrong branch).
-        print -P "$lcicon_fail Sync failed! The tracking branch is a master branch. If you want to rebase to master, you will have to do it yourself."
+        print -P "$lcicon_fail Sync aborted! The tracking branch is a master branch. If you want to rebase to master, you will have to do it yourself."
         return 1
       else
         # There is a proper tracking branch with a different name and is not master
@@ -330,21 +349,6 @@ gsync (){
   && git rebase $REMOTE/$REMOTE_BRANCH \
   && lcfunc_step_border \
   && print -P "$lcicon_tick Syncing finished!"
-}
-
-### Sync function for my previous workflow, which had upstream+originfork+local.
-### Syncs local and origin branch from a remote: runs a fetch from specified remote + rebase local + push to origin.
-OLDgsync (){
-  local BRANCH=`git rev-parse --abbrev-ref HEAD`
-  echo "Syncing the current branch: $BRANCH"
-  echo "===== 1/3: fetching $1 =====" \
-  && git fetch $1 \
-  && echo "===== 2/3: rebasing $BRANCH =====" \
-  && git rebase $1/$BRANCH \
-  && echo "===== 3/3: pushing to origin/$BRANCH =====" \
-  && git push origin $BRANCH \
-  && echo "=====" \
-  && echo "Syncing finished."
 }
 
 ### Function to undo all changes (including stages) back to the last commit, with a confirmation.
@@ -398,3 +402,58 @@ bbackport() {
   done
   bcurrent
 }
+
+# Old obsolete functions for reference
+
+## This was the clean function before it was updated to compare pruned remote to local names for the GitHub squash and merge workflow,
+# gclean() {
+#   local BRANCH=`git rev-parse --abbrev-ref HEAD`
+#   local response=""
+#   # Warning if not on a master* branch
+#   if [[ $BRANCH != master* ]]
+#   then
+#     print -P "$lcicon_warning$lcicon_warning $FG[009]WARNING: It looks like you are not on a master branch!$reset_color $lcicon_warning$lcicon_warning"
+#     vared -p "$lcicon_question Are you sure you want to continue? [y/N] " -c response
+#     if ! [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
+#     then
+#       print -P "$lcicon_fail Aborted! Nothing was changed."
+#       return 1
+#     fi
+#   fi
+#   print -P "$lcicon_infoi Simulating a clean on $BRANCH ..." \
+#   && lcfunc_step_border 1 2 "$lcicon_scissors simulating pruning origin $lcicon_scissors" \
+#   && git remote prune origin --dry-run \
+#   && lcfunc_step_border 2 2 "$lcicon_trash simulating cleaning local branches merged to $BRANCH $lcicon_trash" \
+#   && git branch --merged $BRANCH | grep -v "^\**\s*master"
+#   lcfunc_step_border
+#   print -P "$lcicon_infoi Simulation complete."
+#   vared -p "$lcicon_question Do you want to proceed with the above clean? [y/N] " -c response
+#   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
+#   then
+#     print -P "$lcicon_runarrow Running a clean on $BRANCH ..." \
+#     && lcfunc_step_border 1 2 "$lcicon_scissors pruning origin $lcicon_scissors" \
+#     && git remote prune origin \
+#     && lcfunc_step_border 2 2 "$lcicon_trash cleaning local branches merged to $BRANCH $lcicon_trash" \
+#     && git branch --merged $BRANCH | grep -v "^\**\s*master" | xargs git branch -d \
+#     && lcfunc_step_border \
+#     && print -P "$lcicon_tick Clean finished!"
+#   else
+#     print -P "$lcicon_fail Aborted! Nothing was changed."
+#     return 1
+#   fi
+# }
+
+## Sync function for my previous workflow, which had upstream+originfork+local.
+### Syncs local and origin branch from a remote: runs a fetch from specified remote + rebase local + push to origin.
+# gsync (){
+#   local BRANCH=`git rev-parse --abbrev-ref HEAD`
+#   echo "Syncing the current branch: $BRANCH"
+#   echo "===== 1/3: fetching $1 =====" \
+#   && git fetch $1 \
+#   && echo "===== 2/3: rebasing $BRANCH =====" \
+#   && git rebase $1/$BRANCH \
+#   && echo "===== 3/3: pushing to origin/$BRANCH =====" \
+#   && git push origin $BRANCH \
+#   && echo "=====" \
+#   && echo "Syncing finished."
+# }
