@@ -268,6 +268,7 @@ gclean() {
   # !! Be careful when looking at the result of this! !!
   # This is necessary for branches merged with the GitHub 'squash-and-merge' workflows.
   # Save the result to a variable, and echo the variable if it is not empty.
+  # Inspiration for this from https://medium.com/opendoor-labs/cleaning-up-branches-with-githubs-squash-merge-43138cc7585e
   lcfunc_step_border 3 3 "$lcicon_trash Simulating cleaning local branches with same name as pruned remote ones $lcicon_trash" \
   && local_compare_to_delete="$(comm -12 <(git branch | sed 's/ *//g') <( echo $remote_prune_list | sed 's/^.*origin\///g') | xargs -L1 -J % echo %)" \
   && if [ ! -z "$local_compare_to_delete" ]; then echo $local_compare_to_delete; fi
