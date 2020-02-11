@@ -146,6 +146,7 @@ alias gl="git log --pretty=format:'%Cblue%h%Creset%C(yellow)%d%Creset %s %Cgreen
 alias gbranches='git branch -a'
 alias gnb='git checkout -b'
 alias gnewbranch='git checkout -b'
+alias grenamebranch='git branch -m'
 alias grmbranch='git branch -d'
 alias gd='git diff'
 alias gss='git stash save'
@@ -276,7 +277,7 @@ gclean() {
   print -P "$lcicon_infoi Simulation complete.\n"
   
   # Ask for a confirmation before proceeding with the clean
-  vared -p "$lcicon_question Do you want to proceed with the above clean? [y/N] " -c response
+  vared -p "$lcicon_question Do you still want to do a clean? [y/N] " -c response
   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
   then
     # Step 1: Run a prune and save the result (i.e. the pruned branches) to a variable.

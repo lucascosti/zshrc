@@ -9,7 +9,7 @@ The main files that do the work are:
 * [`.zshrc`](.zshrc): Contains the templated oh-my-zsh options (mostly commented out), and also my custom functions and git aliases.
 * [`zshscripts/themes/p10k-lucas.zsh`](zshscripts/themes/p10k-lucas.zsh): My custom powerlevel10k theme file. Powerlevel10k and this theme file are sourced in `.zshrc`. This theme uses glyphs that require a [Nerd Fonts-patched font](https://github.com/ryanoasis/nerd-fonts) in your terminal.
 
-Note that I have `~/zshscripts` symlinked to the location of [`zshscripts/`](zshscripts/). 
+Note that I have `~/zshscripts` symlinked to the location of [`zshscripts/`](zshscripts/).
 
 I use the following [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules), which are stored in [`zshscripts/`](zshscripts/):
 
