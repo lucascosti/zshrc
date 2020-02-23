@@ -172,16 +172,16 @@ alias {cdr,cdg,gcd}='cd ~/repos/'
 # Functions
 
 ## Some icons for the functions below (prefixed so they won't annoy me in autocompletion on the shell.) Requires a Nerd Fonts patched font.
-local lcicon_infoi="$FG[033]$reset_color" # blue i
-local lcicon_trash="$FG[166]$reset_color" # orange trash
-local lcicon_scissors="$FG[003]$reset_color" #light orange scissors
-local lcicon_tick="$FG[046]$reset_color" # green tick
-local lcicon_question="$FG[192]ﲉ$reset_color" # yellow question
-local lcicon_fail="$FG[009]$reset_color" # red x
-local lcicon_runarrow="$FG[077]$reset_color" # green arrow
-local lcicon_sync="$FG[077]$reset_color" # green sync symbol
-local lcicon_warning="$FG[226]$reset_color" # yellow warning symbol
-local lcicon_undo="$FG[003]\ufa4c$reset_color" # orange undo symbol
+local lcicon_infoi="$FG[033]$reset_color"      # blue i
+local lcicon_trash="$FG[166]$reset_color"      # orange trash
+local lcicon_scissors="$FG[003]$reset_color"   # light orange scissors
+local lcicon_tick="$FG[046]$reset_color"       # green tick
+local lcicon_question="$FG[192]ﲉ$reset_color"   # yellow question
+local lcicon_fail="$FG[009]$reset_color"       # red x
+local lcicon_runarrow="$FG[077]$reset_color"   # green arrow
+local lcicon_sync="$FG[077]$reset_color"       # green sync symbol
+local lcicon_warning="$FG[226]$reset_color"    # yellow warning symbol
+local lcicon_undo="$FG[003]\ufa4c$reset_color"  # orange undo symbol
 
 ## This is an internal function that prints a border around command exections.
 ### If called with no arguments, it prints a simple border.
@@ -212,33 +212,36 @@ gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; 
 #### This autocompletes the above function with the list of remotes
 compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcmr
 
-#### For GitHub: e.g gcpr origin 12345.
-#### It's kinda fancy. This fetches the remote PR, but also automatically sets up tracking to the PR branch on the remote, and tells you how to push back to it.
-#### Requires curl and jq installed, as well as your $github_token set as an evironment variable.
-gcpr() { 
-  lcfunc_step_border 1 2 "Getting info for the checkout"
-  # Get the name of the org/user and repo for a curl command
-  local pr_organdrepo=$(git remote show origin -n | grep h.URL | sed 's/.*://;s/.git$//')
-  print -P "$lcicon_infoi API call to: https://api.github.com/repos/$pr_organdrepo/pulls/$2"
-  # get the name of the PR's branch using the API.
-  local pr_branch=$(curl -sS --request GET --url https://api.github.com/repos/$pr_organdrepo/pulls/$2 --header "authorization: Bearer $github_token" | jq '.head.ref' -r)
-  if [[ "$pr_branch" == "null" ]] ; then
-    print -P "$lcicon_fail API call did not find a remote branch! Are you sure you used the correct remote and PR number?"
-    return 1
-  else
-    print -P "$lcicon_infoi API call complete. PR branch is: $pr_branch"
-  fi
-  lcfunc_step_border 1 2 "Fetching PR and setting up tracking"
-  # fetch and checkout the PR, track the remote branch of the PR
-  git fetch $1 pull/$2/head:pr-$1-$2 \
-  && git checkout pr-$1-$2 \
-  && git branch --set-upstream-to=$1/$pr_branch \
-  && lcfunc_step_border \
-  && print -P "$lcicon_tick Done!" \
-  && print -P "$lcicon_infoi If you have write access to the PR's branch, you can push changes using:\n  git push $1 pr-$1-$2:$pr_branch"
-}
-#### This autocompletes the above function with the list of remotes
-compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcpr
+# #### For GitHub: e.g gcpr origin 12345.
+# #### It's kinda fancy. This fetches the remote PR, but also automatically sets up tracking to the PR branch on the remote, and tells you how to push back to it.
+# #### Requires curl and jq installed, as well as your $github_token set as an evironment variable.
+# gcpr() {
+#   lcfunc_step_border 1 2 "Getting info for the checkout"
+#   # Get the name of the org/user and repo for a curl command
+#   local pr_organdrepo=$(git remote show origin -n | grep h.URL | sed 's/.*://;s/.git$//')
+#   print -P "$lcicon_infoi API call to: https://api.github.com/repos/$pr_organdrepo/pulls/$2"
+#   # get the name of the PR's branch using the API.
+#   local pr_branch=$(curl -sS --request GET --url https://api.github.com/repos/$pr_organdrepo/pulls/$2 --header "authorization: Bearer $github_token" | jq '.head.ref' -r)
+#   if [[ "$pr_branch" == "null" ]] ; then
+#     print -P "$lcicon_fail API call did not find a remote branch! Are you sure you used the correct remote and PR number?"
+#     return 1
+#   else
+#     print -P "$lcicon_infoi API call complete. PR branch is: $pr_branch"
+#   fi
+#   lcfunc_step_border 1 2 "Fetching PR and setting up tracking"
+#   # fetch and checkout the PR, track the remote branch of the PR
+#   git fetch $1 pull/$2/head:pr-$1-$2 \
+#   && git checkout pr-$1-$2 \
+#   && git branch --set-upstream-to=$1/$pr_branch \
+#   && lcfunc_step_border \
+#   && print -P "$lcicon_tick Done!" \
+#   && print -P "$lcicon_infoi If you have write access to the PR's branch, you can push changes using:\n  git push $1 pr-$1-$2:$pr_branch"
+# }
+# #### This autocompletes the above function with the list of remotes
+# compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcpr
+
+# Commenting out my above crazily complicated function out to try using the GitHub CLI to do something similar for me. https://github.com/cli/cli
+gcpr() { gh pr checkout $1; }
 
 ### This function prunes references to deleted remote branches, and deletes local branches that have been merged and/or deleted from the remotes.
 ### It is intended to be run when on a master branch, and warns when it isn't.
