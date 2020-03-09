@@ -212,35 +212,9 @@ gcmr() { git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2; 
 #### This autocompletes the above function with the list of remotes
 compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcmr
 
-# #### For GitHub: e.g gcpr origin 12345.
-# #### It's kinda fancy. This fetches the remote PR, but also automatically sets up tracking to the PR branch on the remote, and tells you how to push back to it.
-# #### Requires curl and jq installed, as well as your $github_token set as an evironment variable.
-# gcpr() {
-#   lcfunc_step_border 1 2 "Getting info for the checkout"
-#   # Get the name of the org/user and repo for a curl command
-#   local pr_organdrepo=$(git remote show origin -n | grep h.URL | sed 's/.*://;s/.git$//')
-#   print -P "$lcicon_infoi API call to: https://api.github.com/repos/$pr_organdrepo/pulls/$2"
-#   # get the name of the PR's branch using the API.
-#   local pr_branch=$(curl -sS --request GET --url https://api.github.com/repos/$pr_organdrepo/pulls/$2 --header "authorization: Bearer $github_token" | jq '.head.ref' -r)
-#   if [[ "$pr_branch" == "null" ]] ; then
-#     print -P "$lcicon_fail API call did not find a remote branch! Are you sure you used the correct remote and PR number?"
-#     return 1
-#   else
-#     print -P "$lcicon_infoi API call complete. PR branch is: $pr_branch"
-#   fi
-#   lcfunc_step_border 1 2 "Fetching PR and setting up tracking"
-#   # fetch and checkout the PR, track the remote branch of the PR
-#   git fetch $1 pull/$2/head:pr-$1-$2 \
-#   && git checkout pr-$1-$2 \
-#   && git branch --set-upstream-to=$1/$pr_branch \
-#   && lcfunc_step_border \
-#   && print -P "$lcicon_tick Done!" \
-#   && print -P "$lcicon_infoi If you have write access to the PR's branch, you can push changes using:\n  git push $1 pr-$1-$2:$pr_branch"
-# }
-# #### This autocompletes the above function with the list of remotes
-# compdef -e 'words[1]=(git remote show); service=git; (( CURRENT+=2 )); _git' gcpr
-
-# Commenting out my above crazily complicated function out to try using the GitHub CLI to do something similar for me. https://github.com/cli/cli
+#### For GitHub: e.g gcpr 12345.
+#### Requires GitHUb CLI: https://github.com/cli/cli
+#### Replaces old complicated function. For old function, see https://github.com/lucascosti/zshrc/blob/b371ff5404e47990d37be72c6f4c90618f019445/.zshrc#L215-L241
 gcpr() { gh pr checkout $1; }
 
 ### This function prunes references to deleted remote branches, and deletes local branches that have been merged and/or deleted from the remotes.
@@ -407,58 +381,3 @@ bbackport() {
   done
   bcurrent
 }
-
-# Old obsolete functions for reference
-
-## This was the clean function before it was updated to compare pruned remote to local names for the GitHub squash and merge workflow,
-# gclean() {
-#   local BRANCH=`git rev-parse --abbrev-ref HEAD`
-#   local response=""
-#   # Warning if not on a master* branch
-#   if [[ $BRANCH != master* ]]
-#   then
-#     print -P "$lcicon_warning$lcicon_warning $FG[009]WARNING: It looks like you are not on a master branch!$reset_color $lcicon_warning$lcicon_warning"
-#     vared -p "$lcicon_question Are you sure you want to continue? [y/N] " -c response
-#     if ! [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
-#     then
-#       print -P "$lcicon_fail Aborted! Nothing was changed."
-#       return 1
-#     fi
-#   fi
-#   print -P "$lcicon_infoi Simulating a clean on $BRANCH ..." \
-#   && lcfunc_step_border 1 2 "$lcicon_scissors simulating pruning origin $lcicon_scissors" \
-#   && git remote prune origin --dry-run \
-#   && lcfunc_step_border 2 2 "$lcicon_trash simulating cleaning local branches merged to $BRANCH $lcicon_trash" \
-#   && git branch --merged $BRANCH | grep -v "^\**\s*master"
-#   lcfunc_step_border
-#   print -P "$lcicon_infoi Simulation complete."
-#   vared -p "$lcicon_question Do you want to proceed with the above clean? [y/N] " -c response
-#   if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
-#   then
-#     print -P "$lcicon_runarrow Running a clean on $BRANCH ..." \
-#     && lcfunc_step_border 1 2 "$lcicon_scissors pruning origin $lcicon_scissors" \
-#     && git remote prune origin \
-#     && lcfunc_step_border 2 2 "$lcicon_trash cleaning local branches merged to $BRANCH $lcicon_trash" \
-#     && git branch --merged $BRANCH | grep -v "^\**\s*master" | xargs git branch -d \
-#     && lcfunc_step_border \
-#     && print -P "$lcicon_tick Clean finished!"
-#   else
-#     print -P "$lcicon_fail Aborted! Nothing was changed."
-#     return 1
-#   fi
-# }
-
-## Sync function for my previous workflow, which had upstream+originfork+local.
-### Syncs local and origin branch from a remote: runs a fetch from specified remote + rebase local + push to origin.
-# gsync (){
-#   local BRANCH=`git rev-parse --abbrev-ref HEAD`
-#   echo "Syncing the current branch: $BRANCH"
-#   echo "===== 1/3: fetching $1 =====" \
-#   && git fetch $1 \
-#   && echo "===== 2/3: rebasing $BRANCH =====" \
-#   && git rebase $1/$BRANCH \
-#   && echo "===== 3/3: pushing to origin/$BRANCH =====" \
-#   && git push origin $BRANCH \
-#   && echo "=====" \
-#   && echo "Syncing finished."
-# }
