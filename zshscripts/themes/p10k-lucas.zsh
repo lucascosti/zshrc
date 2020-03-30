@@ -108,7 +108,7 @@
   # ':remotebranchname' if the tracking branch name differs from local branch and is not tracking master
   vcs+='${${VCS_STATUS_REMOTE_BRANCH:#($VCS_STATUS_LOCAL_BRANCH|master)}:+:${VCS_STATUS_REMOTE_BRANCH//\%/%%}}'
   # '#tag' if on a tag
-  vcs+='${VCS_STATUS_TAG:+%094F#${VCS_STATUS_TAG//\%/%%}}'
+  vcs+='${VCS_STATUS_TAG:+#${VCS_STATUS_TAG//\%/%%}}'
   # add a space after the branch shenanigans, only if there is nothing more in the prompt
   vcs+=' '
   # ⇣42 if behind the remote. If no commits are ahead, also add trailing space
