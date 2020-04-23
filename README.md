@@ -1,5 +1,13 @@
 # Lucas' Zsh config
 
+----
+
+**⚠️ This repository is now archived! ⚠️**
+
+My Zsh configuration is now located in my `mac-config` repo: https://github.com/lucascosti/mac-config/tree/master/zsh
+
+----
+
 This is my Zsh configuration. Feel free to clone/copy and reuse.
 
 In August 2019, I migrated my work MacBook over to use [Zsh](https://en.wikipedia.org/wiki/Z_shell) (with [oh-my-zsh](https://ohmyz.sh/)) as my default shell. This repo contains the configuration I use, which as much as possible aims to mirror and enhance [my previous bash configuration](https://github.com/lucascosti/bashrc).
